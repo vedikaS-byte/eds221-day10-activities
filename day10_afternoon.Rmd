@@ -108,10 +108,14 @@ lake_join %>% ggplot(aes(x = mean_temp_yr, y = mean_duration, col = mean_duratio
 -   Explore thaw dates since 1970. Create a subset of the ice cover duration data since 1970 (ok to include 1970), then convert the ice_off column to a Date. Use lubridate::yday() to pull the numeric day of the year from that Date. Create an exploratory plot of the ice off day (numeric day-of-the-year) from 1970 - present. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
 
 ```{r}
-ice_cover %>% filter(year4 >= "1970") %>% mutate(ice_off_yday = lubridate::yday(ice_off)) %>% na.omit() %>% ggplot(aes(
+ice_cover <- ice_cover %>% filter(year4 >= "1970") %>% 
+   mutate(ice_off = as.Date(ice_off))
+
+ice_cover %>%  mutate(ice_off_yday = lubridate::yday(ice_off)) %>% na.omit() %>% ggplot(aes(
   x = ice_off,
  # x = factor(ice_off_yday),
-  y = ice_duration)) + geom_point() + facet_wrap(~year4)
+  y = ice_duration)) + geom_point(col = "darkred") + labs(x = "Ice off", y = "Number of days of lasting ice (ice duration)", title = "Ice duration based on date of thaw") + theme_minimal()  
+
 
 
 ```
