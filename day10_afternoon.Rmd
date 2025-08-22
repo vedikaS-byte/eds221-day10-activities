@@ -1,0 +1,81 @@
+---
+title: "day10_afternoon"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Recapping Skills From EDS 221 with North Temperate Lakes LTER Data Wrangling
+
+[**\***\*The following was pulled directly from the assignment page:](https://eds-221-programming-essentials.github.io/course-materials/eod-practice/eod-day10b.html)
+
+-   Read in both files (ice cover duration and meteorological data). Note that the ice cover data has some NA values stored as -999.
+```{r}
+library(tidyverse)
+library(janitor)
+
+ice_cover <- read_csv(here::here("data", "North Temperate Lakes LTER - Ice Duration - Madison Lakes Area.csv"))
+
+meteor <- read_csv(here::here("data", "Madison Daily Meteorological Data.csv"))
+
+
+```
+
+-   Create a visualization that compares ice duration across different lakes in the Madison Lake Area. Include both the actual ice duration values and some representation of summary statistics for each lake. Careful if you use a boxplot over a jitter or beeswarm - what values might be doubly represented? Can you find an argument that would help you remove those from the boxplot?
+
+```{r}
+str(ice_cover)
+ice_cover %>%
+  # group_by(lakeid, year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T) ) %>% 
+  ggplot(aes(x = factor(lakeid), y = ice_duration, fill = factor(lakeid))) + geom_jitter() + geom_boxplot(alpha = .5, stat = "boxplot") + guides(fill = "none")
+
+# ice_cover  %>%  group_by(lakeid, year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T) ) %>% 
+#   ggplot(aes(x = factor(lakeid), y = mean_duration, fill = factor(lakeid))) + geom_col() + guides(col = "none")
+
+
+
+
+```
+
+
+
+-   Find the mean ice cover duration in Madison Lake Area by year (i.e., you’ll only be grouping by the year variable here). Understanding check: what are you finding the mean of here? Why are there multiple observations for each year?)
+
+Multiple observations for each year because these means are included for each lake.
+
+```{r}
+ice_cover %>% group_by(year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T))
+```
+
+
+
+
+-   Create an exploratory visualization of mean ice cover duration by year for the Madison Lake Area. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
+
+```{r}
+ice_cover %>% group_by(year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T)) %>% ggplot(aes(x = year4, y = mean_duration, fill = mean_duration)) + geom_col() + scale_fill_gradient(low = "darkblue", high = "darkred") +  theme_minimal() + labs(x = "Year", y = "Average Ice Duration", title = "Average Ice Duration in Madison Lakes Overtime (1851-2019)", caption = "Average ice duration tends to remain above 0; however, there have not been any negative averages since at least 1975. A clear outlier occurred post-1850.")
+
+#+ geom_jitter() +
+```
+
+
+
+-   Find the mean air temperature (using the daily average air temperature - adjusted) in Madison Lake Area by year using only observations from winter months (December, January, February)
+
+```{r}
+meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize()
+view(meteor)
+
+
+
+```
+
+
+
+-   Create an exploratory visualization of mean winter temperatures for the Madison Lake Area. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
+
+-   Join the mean winter air temperatures to the mean ice cover duration data you found above
+
+-   Create an exploratory scatterplot of mean winter temperatures versus mean ice duration. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
+
+-   Explore thaw dates since 1970. Create a subset of the ice cover duration data since 1970 (ok to include 1970), then convert the ice_off column to a Date. Use lubridate::yday() to pull the numeric day of the year from that Date. Create an exploratory plot of the ice off day (numeric day-of-the-year) from 1970 - present. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
