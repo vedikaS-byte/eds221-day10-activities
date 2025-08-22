@@ -44,7 +44,11 @@ ice_cover %>%
 Multiple observations for each year because these means are included for each lake.
 
 ```{r}
-ice_cover %>% group_by(year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T))
+mean_ice_cover <- ice_cover %>% group_by(year4) %>% summarize(mean_duration = mean(ice_duration, na.rm = T))
+
+mean_ice_cover
+
+
 ```
 
 
@@ -63,19 +67,56 @@ ice_cover %>% group_by(year4) %>% summarize(mean_duration = mean(ice_duration, n
 -   Find the mean air temperature (using the daily average air temperature - adjusted) in Madison Lake Area by year using only observations from winter months (December, January, February)
 
 ```{r}
-meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize()
-view(meteor)
-
-
-
+meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize(mean_temp_yr = mean(ave_air_temp_adjusted, na.rm = T))
 ```
 
 
 
 -   Create an exploratory visualization of mean winter temperatures for the Madison Lake Area. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
 
+```{r}
+meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize(mean_temp_yr = mean(ave_air_temp_adjusted, na.rm = T)) %>% ggplot(aes(x = year4, y = mean_temp_yr, col = mean_temp_yr)) +
+geom_point() + scale_fill_gradient(low = "darkblue", high = "darkred") + theme_minimal() + labs(x = "Year", y = "Average Temperature", col = "Average Temperature" , caption = "Mean average temperature has increased overtime, indicating a future where warmer temperatures are likely to be normalized.", title = "Average Annual Temperature Overtime at Different Madison Lakes") 
+
+
+meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize(mean_temp_yr = mean(ave_air_temp_adjusted, na.rm = T)) %>% ggplot(aes(x = year4, y = mean_temp_yr, col = mean_temp_yr)) +
+geom_col() + scale_fill_gradient(low = "darkblue", high = "darkred") + theme_minimal() + labs(x = "Year", y = "Average Temperature", col = "Average Temperature")
+
+
+
+```
+
+
 -   Join the mean winter air temperatures to the mean ice cover duration data you found above
+
+```{r}
+meteor_avg <- meteor %>% filter(month %in% c("12", "1", "2")) %>% group_by(year4) %>% summarize(mean_temp_yr = mean(ave_air_temp_adjusted, na.rm = T))
+
+lake_join <- mean_ice_cover %>% full_join(meteor_avg, by = "year4")
+str(lake_join)
+dim(lake_join)
+```
+
 
 -   Create an exploratory scatterplot of mean winter temperatures versus mean ice duration. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
 
+```{r}
+lake_join %>% ggplot(aes(x = mean_temp_yr, y = mean_duration, col = mean_duration)) + geom_point(position = "jitter") + scale_fill_gradient(low = "darkblue", high =  "blue") + theme_minimal() + labs(x = "Average Annual Temperature (degrees F)", y = "Average ice duration", title = "Average ice duration based on average annual temperature", col = "Mean ice duration", caption = "Mean ice duration does not seem to exceed -250 and is strongest for a specific range of average annual temperatures.") 
+```
+
+
 -   Explore thaw dates since 1970. Create a subset of the ice cover duration data since 1970 (ok to include 1970), then convert the ice_off column to a Date. Use lubridate::yday() to pull the numeric day of the year from that Date. Create an exploratory plot of the ice off day (numeric day-of-the-year) from 1970 - present. Add a sentence or two below this exploratory graph describing the overall trend(s) you observe.
+
+```{r}
+ice_cover %>% filter(year4 >= "1970") %>% mutate(ice_off_yday = lubridate::yday(ice_off)) %>% na.omit() %>% ggplot(aes(
+  x = ice_off,
+ # x = factor(ice_off_yday),
+  y = ice_duration)) + geom_point() + facet_wrap(~year4)
+
+
+```
+
+
+
+
+
